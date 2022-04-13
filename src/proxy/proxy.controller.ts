@@ -17,7 +17,11 @@ export class ProxyController {
   @Get('bitcoin')
   @UseGuards(PoolGuard, SignatureGuard)
   async bitcoin(@Body() body: BitcoinBody): Promise<any> {
-    return this.proxyService.bitcoin(body);
+    const endpoint = process.env.BITCOIN_ENDPOINT;
+    if (!endpoint)
+      throw new HttpException('No Bitcoin endpoint specified.', 501);
+
+    return this.proxyService.bitcoin(endpoint, body);
   }
 
   @Get(['terra/*'])

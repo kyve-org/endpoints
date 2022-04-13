@@ -4,8 +4,15 @@ import { BitcoinBody } from './proxy.models';
 
 @Injectable()
 export class ProxyService {
-  async bitcoin(body: BitcoinBody): Promise<any> {
-    return 'coming soon ...';
+  async bitcoin(endpoint: string, body: BitcoinBody): Promise<any> {
+    try {
+      const res = await axios.get(endpoint, {
+        data: body,
+      });
+      return res.data;
+    } catch (err) {
+      throw new HttpException(err.response.data.message, err.response.status);
+    }
   }
 
   async cosmosSDK(endpoint: string, path: string): Promise<any> {
