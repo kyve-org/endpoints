@@ -1,5 +1,5 @@
 {
-  "name": "@kyve/endpoints",
+  "name": "@kyve/proxy",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -24,6 +24,7 @@
     "@cosmjs/amino": "^0.28.3",
     "@keplr-wallet/cosmos": "^0.10.1",
     "@nestjs/common": "^8.0.0",
+    "@nestjs/config": "^2.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "axios": "^0.26.1",

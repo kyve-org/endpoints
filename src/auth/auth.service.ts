@@ -1,12 +1,34 @@
 import { pubkeyToAddress } from '@cosmjs/amino';
 import { verifyADR36Amino } from '@keplr-wallet/cosmos';
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
-import { PoolResponse } from './auth.models';
+import { Config, PoolResponse } from './auth.models';
 
 @Injectable()
 export class AuthService {
-  async validate(
+  async validatePool(id: string, path: string): Promise<boolean> {
+    const url = process.env.URL ?? 'https://proxy.kyve.network';
+    const endpoint =
+      process.env.ENDPOINT ?? 'https://api.korellia.kyve.network';
+
+    // Fetch pool configuration.
+    const { data } = await axios.get<PoolResponse>(
+      `${endpoint}/kyve/registry/v1beta1/pool/${id}`,
+    );
+    const config: Config = JSON.parse(data.pool.config);
+
+    // Check RPC endpoint specified in pool configuration.
+    if (`${url}${path}`.startsWith(config.rpc)) {
+      return true;
+    }
+
+    throw new HttpException(
+      'Pool is not configured to use this endpoint.',
+      403,
+    );
+  }
+
+  async validateSignature(
     signature: string,
     pubKey: string,
     poolId: string,
@@ -36,17 +58,21 @@ export class AuthService {
       Buffer.from(signature),
     );
 
-    // Signature is valid, check if the signer is an active protocol node.
     if (isValid) {
+      // Signature is valid.
       const { data } = await axios.get<PoolResponse>(
-        `${endpoint}/kyve/registry/v1beta/pool/${poolId}`,
+        `${endpoint}/kyve/registry/v1beta1/pool/${poolId}`,
       );
 
+      // Check if the signer is an active protocol node.
       if (data.pool.stakers.includes(signer)) {
         return true;
+      } else {
+        throw new HttpException('Signer is not an active protocol node.', 403);
       }
+    } else {
+      // Signature is invalid.
+      throw new HttpException('Signature is invalid.', 403);
     }
-
-    return false;
   }
 }
