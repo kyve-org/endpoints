@@ -35,17 +35,19 @@ export class SignatureGuard implements CanActivate {
     const signature = headers['signature'];
     const pubKey = headers['public-key'];
     const poolId = headers['pool-id'];
+    const timestamp = headers['timestamp'];
 
     if (signature && pubKey && poolId) {
       return await this.authService.validateSignature(
         signature,
         pubKey,
         poolId,
+        timestamp,
       );
     }
 
     throw new HttpException(
-      'Please include "signature", "public-key", and "pool-id" headers.',
+      'Please include "signature", "public-key", "pool-id", and "timestamp" headers.',
       403,
     );
   }
