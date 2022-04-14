@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@cosmjs/amino": "^0.28.3",
+    "@cosmjs/encoding": "^0.28.3",
     "@keplr-wallet/cosmos": "^0.10.1",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^2.0.0",

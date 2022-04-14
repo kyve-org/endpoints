@@ -1,4 +1,5 @@
 import { pubkeyToAddress } from '@cosmjs/amino';
+import { fromBase64 } from '@cosmjs/encoding';
 import { verifyADR36Amino } from '@keplr-wallet/cosmos';
 import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
@@ -50,13 +51,18 @@ export class AuthService {
     );
 
     // Check that the signature is correct.
-    const isValid = verifyADR36Amino(
-      prefix,
-      signer,
-      message,
-      Buffer.from(pubKey),
-      Buffer.from(signature),
-    );
+    let isValid = false;
+    try {
+      isValid = verifyADR36Amino(
+        prefix,
+        signer,
+        message,
+        fromBase64(pubKey),
+        fromBase64(signature),
+      );
+    } catch (err) {
+      throw new HttpException(new Error(err).message, 500);
+    }
 
     if (isValid) {
       // Signature is valid.

@@ -361,7 +361,7 @@
     sha.js "^2.4.11"
     unorm "^1.5.0"
 
-"@cosmjs/encoding@0.28.3":
+"@cosmjs/encoding@0.28.3", "@cosmjs/encoding@^0.28.3":
   version "0.28.3"
   resolved "https://registry.yarnpkg.com/@cosmjs/encoding/-/encoding-0.28.3.tgz#b61494336968fd36d46a81524420f729a50810c3"
   integrity sha512-KXHIqWxloyGMcfHheT6c7qJVg7JOpcHlsZEK3KXktqQU4lQpVbmZc3Bi6o1r8AymVh8UnaxBuKcbbMRHlXhCJw==
