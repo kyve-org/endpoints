@@ -6,9 +6,7 @@ import { BitcoinBody } from './proxy.models';
 export class ProxyService {
   async bitcoin(endpoint: string, body: BitcoinBody): Promise<any> {
     try {
-      const res = await axios.get(endpoint, {
-        data: body,
-      });
+      const res = await axios.post(endpoint, body);
       return res.data;
     } catch (err) {
       throw new HttpException(err.response.data.message, err.response.status);
