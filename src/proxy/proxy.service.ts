@@ -9,7 +9,11 @@ export class ProxyService {
       const res = await axios.post(endpoint, body);
       return res.data;
     } catch (err) {
-      throw new HttpException(err.response.data.message, err.response.status);
+      if (err.response) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new Error();
+      }
     }
   }
 
@@ -18,7 +22,11 @@ export class ProxyService {
       const res = await axios.get(`${endpoint}/${path}`);
       return res.data;
     } catch (err) {
-      throw new HttpException(err.response.data.message, err.response.status);
+      if (err.response) {
+        throw new HttpException(err.response.data, err.response.status);
+      } else {
+        throw new Error();
+      }
     }
   }
 }

@@ -1,10 +1,9 @@
 import { pubkeyToAddress } from '@cosmjs/amino';
-import { fromBase64 } from '@cosmjs/encoding';
-import { verifyADR36Amino } from '@keplr-wallet/cosmos';
 import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { addSeconds, compareAsc } from 'date-fns';
 import { Config, PoolResponse } from './auth.models';
+import { verifyADR036Signature } from '../utils/adr036';
 
 @Injectable()
 export class AuthService {
@@ -54,18 +53,7 @@ export class AuthService {
     const message = `${signer}//${poolId}//${timestamp}`;
 
     // Check that the signature is correct.
-    let isValid = false;
-    try {
-      isValid = verifyADR36Amino(
-        prefix,
-        signer,
-        message,
-        fromBase64(pubKey),
-        fromBase64(signature),
-      );
-    } catch (err) {
-      throw new HttpException(new Error(err).message, 500);
-    }
+    const isValid = await verifyADR036Signature(message, pubKey, signature);
 
     if (isValid) {
       // Signature is valid.
