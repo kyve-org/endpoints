@@ -24,6 +24,16 @@ export class ProxyController {
     return this.proxyService.bitcoin(endpoint, body);
   }
 
+  @Get('cosmos/*')
+  @UseGuards(PoolGuard, SignatureGuard)
+  async cosmos(@Param('0') path: string): Promise<any> {
+    const endpoint = process.env.COSMOS_ENDPOINT;
+    if (!endpoint)
+      throw new HttpException('No Cosmos endpoint specified.', 501);
+
+    return this.proxyService.cosmosSDK(endpoint, path);
+  }
+
   @Get(['terra/*'])
   @UseGuards(PoolGuard, SignatureGuard)
   async terra(@Param('0') path: string): Promise<any> {
