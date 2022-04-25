@@ -1,25 +1,23 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
-import { BitcoinBody } from './proxy.models';
 
 @Injectable()
 export class ProxyService {
-  async bitcoin(endpoint: string, body: BitcoinBody): Promise<any> {
+  async request(
+    method: 'get' | 'post',
+    endpoint: string,
+    body?: any,
+  ): Promise<any> {
     try {
-      const res = await axios.post(endpoint, body);
-      return res.data;
-    } catch (err) {
-      if (err.response) {
-        throw new HttpException(err.response.data, err.response.status);
-      } else {
-        throw new Error();
+      let res: any;
+      if (method === 'get') {
+        res = await axios.get(endpoint);
       }
-    }
-  }
 
-  async cosmosSDK(endpoint: string, path: string): Promise<any> {
-    try {
-      const res = await axios.get(`${endpoint}/${path}`);
+      if (method === 'post') {
+        res = await axios.post(endpoint, body);
+      }
+
       return res.data;
     } catch (err) {
       if (err.response) {
