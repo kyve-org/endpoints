@@ -33,6 +33,15 @@ export class ProxyController {
     return this.proxyService.request('get', `${endpoint}/${path}`);
   }
 
+  @Get('near')
+  @UseGuards(PoolGuard, SignatureGuard)
+  async near(@Body() body: any): Promise<any> {
+    const endpoint = process.env.NEAR_ENDPOINT;
+    if (!endpoint) throw new HttpException('No Near endpoint specified.', 501);
+
+    return this.proxyService.request('post', endpoint, body);
+  }
+
   @Get('solana')
   @UseGuards(PoolGuard, SignatureGuard)
   async solana(@Body() body: any): Promise<any> {
