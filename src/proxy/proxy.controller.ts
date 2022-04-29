@@ -4,6 +4,7 @@ import {
   Get,
   HttpException,
   Param,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import { ProxyService } from './proxy.service';
@@ -33,7 +34,7 @@ export class ProxyController {
     return this.proxyService.request('get', `${endpoint}/${path}`);
   }
 
-  @Get('near')
+  @Post('near')
   @UseGuards(PoolGuard, SignatureGuard)
   async near(@Body() body: any): Promise<any> {
     const endpoint = process.env.NEAR_ENDPOINT;
