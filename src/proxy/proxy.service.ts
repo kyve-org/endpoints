@@ -20,6 +20,8 @@ export class ProxyService {
 
       return res.data;
     } catch (err) {
+      console.log(err);
+
       if (err.response) {
         throw new HttpException(err.response.data, err.response.status);
       } else {
