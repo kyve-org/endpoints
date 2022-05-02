@@ -43,7 +43,7 @@ export class ProxyController {
     return this.proxyService.request('post', endpoint, body);
   }
 
-  @Get('solana')
+  @Post('solana')
   @UseGuards(PoolGuard, SignatureGuard)
   async solana(@Body() body: any): Promise<any> {
     const endpoint = process.env.SOLANA_ENDPOINT;
