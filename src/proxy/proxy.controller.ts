@@ -34,14 +34,14 @@ export class ProxyController {
     return this.proxyService.request('get', `${endpoint}/${path}`);
   }
 
-  @Post('kusama')
+  @Get('kusama/*')
   @UseGuards(PoolGuard, SignatureGuard)
-  async kusama(@Body() body: any): Promise<any> {
+  async kusama(@Param('0') path: string): Promise<any> {
     const endpoint = process.env.KUSAMA_ENDPOINT;
     if (!endpoint)
       throw new HttpException('No Kusama endpoint specified.', 501);
 
-    return this.proxyService.request('post', endpoint, body);
+    return this.proxyService.request('get', `${endpoint}/${path}`);
   }
 
   @Post('near')
