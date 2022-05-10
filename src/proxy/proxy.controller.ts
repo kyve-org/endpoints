@@ -34,7 +34,7 @@ export class ProxyController {
     return this.proxyService.request('get', `${endpoint}/${path}`);
   }
 
-  @Get('evmosEVM')
+  @Post('evmos-evm')
   @UseGuards(PoolGuard, SignatureGuard)
   async evmosEVM(@Body() body: any): Promise<any> {
     const endpoint = process.env.EVMOS_EVM_ENDPOINT;
