@@ -34,6 +34,16 @@ export class ProxyController {
     return this.proxyService.request('get', `${endpoint}/${path}`);
   }
 
+  @Get('evmos-evm')
+  @UseGuards(PoolGuard, SignatureGuard)
+  async evmosEVM(@Body() body: any): Promise<any> {
+    const endpoint = process.env.EVMOS_EVM_ENDPOINT;
+    if (!endpoint)
+      throw new HttpException('No Evmos EVM endpoint specified.', 501);
+
+    return this.proxyService.request('post', endpoint, body);
+  }
+
   @Get('kusama/*')
   @UseGuards(PoolGuard, SignatureGuard)
   async kusama(@Param('0') path: string): Promise<any> {
