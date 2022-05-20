@@ -34,6 +34,16 @@ export class ProxyController {
     return this.proxyService.request('get', `${endpoint}/${path}`);
   }
 
+  @Get('evmos-cosmos/*')
+  @UseGuards(PoolGuard, SignatureGuard)
+  async evmosCosmos(@Param('0') path: string): Promise<any> {
+    const endpoint = process.env.EVMOS_COSMOS_ENDPOINT;
+    if (!endpoint)
+      throw new HttpException('No Evmos Cosmos endpoint specified.', 501);
+
+    return this.proxyService.request('get', `${endpoint}/${path}`);
+  }
+
   @Post('evmos-evm')
   @UseGuards(PoolGuard, SignatureGuard)
   async evmosEVM(@Body() body: any): Promise<any> {
