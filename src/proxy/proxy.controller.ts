@@ -41,7 +41,14 @@ export class ProxyController {
     if (!endpoint)
       throw new HttpException('No Evmos Cosmos endpoint specified.', 501);
 
-    return this.proxyService.request('get', `${endpoint}/${path}`);
+    const token = process.env.EVMOS_COSMOS_TOKEN;
+    if (!token)
+      throw new HttpException('No Evmos Cosmos auth token specified.', 501);
+
+    return this.proxyService.request(
+      'get',
+      `${endpoint}/${path}?auth=${token}`,
+    );
   }
 
   @Post('evmos-evm')
