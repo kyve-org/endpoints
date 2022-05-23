@@ -14,6 +14,16 @@ import { PoolGuard, SignatureGuard } from '../auth/auth.guard';
 export class ProxyController {
   constructor(private readonly proxyService: ProxyService) {}
 
+  @Post('aurora')
+  @UseGuards(PoolGuard, SignatureGuard)
+  async aurora(@Body() body: any): Promise<any> {
+    const endpoint = process.env.AURORA_ENDPOINT;
+    if (!endpoint)
+      throw new HttpException('No Aurora endpoint specified.', 501);
+
+    return this.proxyService.request('post', endpoint, body);
+  }
+
   @Get('bitcoin')
   @UseGuards(PoolGuard, SignatureGuard)
   async bitcoin(@Body() body: any): Promise<any> {
