@@ -25,7 +25,7 @@ export class ProxyService {
       if (err.response) {
         throw new HttpException(err.response.data, err.response.status);
       } else {
-        throw new Error();
+        throw new HttpException('Internal Server Error', 500);
       }
     }
   }
