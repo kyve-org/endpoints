@@ -8,3 +8,7 @@ export interface PoolResponse {
     stakers: string[];
   };
 }
+
+export interface StakeInfoResponse {
+  current_stake: string;
+}

@@ -2,7 +2,7 @@ import { pubkeyToAddress } from '@cosmjs/amino';
 import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { addSeconds, compareAsc } from 'date-fns';
-import { Config, PoolResponse } from './auth.models';
+import { Config, PoolResponse, StakeInfoResponse } from './auth.models';
 import { verifyADR036Signature } from '../utils/adr036';
 
 @Injectable()
@@ -57,8 +57,8 @@ export class AuthService {
 
     if (isValid) {
       // Signature is valid.
-      const { data } = await axios.get<PoolResponse>(
-        `${endpoint}/kyve/registry/v1beta1/pool/${poolId}`,
+      const { data } = await axios.get<StakeInfoResponse>(
+        `${endpoint}/kyve/registry/v1beta1/stake_info/${poolId}/${signer}`,
       );
 
       // Check if the signature is expired.
@@ -70,7 +70,7 @@ export class AuthService {
       }
 
       // Check if the signer is an active protocol node.
-      if (data.pool.stakers.includes(signer)) {
+      if (data.current_stake !== '0') {
         return true;
       } else {
         throw new HttpException('Signer is not an active protocol node.', 403);
