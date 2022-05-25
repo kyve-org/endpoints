@@ -2,21 +2,39 @@ import { pubkeyToAddress } from '@cosmjs/amino';
 import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { addSeconds, compareAsc } from 'date-fns';
-import { Config, PoolResponse, StakeInfoResponse } from './auth.models';
+import { Config, PoolsResponse, StakeInfoResponse } from './auth.models';
 import { verifyADR036Signature } from '../utils/adr036';
 
 @Injectable()
 export class AuthService {
-  async validatePool(id: string, path: string): Promise<boolean> {
-    const url = process.env.URL ?? 'https://proxy.kyve.network';
+  configs: { [id: string]: Config } = {};
+
+  constructor() {
+    // noinspection JSIgnoredPromiseFromCall
+    this.cachePools();
+  }
+
+  private async cachePools() {
     const endpoint =
       process.env.ENDPOINT ?? 'https://api.korellia.kyve.network';
 
-    // Fetch pool configuration.
-    const { data } = await axios.get<PoolResponse>(
-      `${endpoint}/kyve/registry/v1beta1/pool/${id}`,
+    const { data } = await axios.get<PoolsResponse>(
+      `${endpoint}/kyve/registry/v1beta1/pools`,
     );
-    const config: Config = JSON.parse(data.pool.config);
+
+    data.pools.forEach((pool) => {
+      this.configs[pool.id] = JSON.parse(pool.config);
+    });
+
+    // Run this every 5 minutes.
+    setTimeout(this.cachePools, 5 * 60 * 1000);
+  }
+
+  async validatePool(id: string, path: string): Promise<boolean> {
+    const url = process.env.URL ?? 'https://proxy.kyve.network';
+
+    // Fetch pool configuration.
+    const config = this.configs[id];
 
     // Check RPC endpoint specified in pool configuration.
     if (`${url}${path}`.startsWith(config.rpc)) {

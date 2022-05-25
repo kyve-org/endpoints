@@ -2,11 +2,11 @@ export interface Config {
   rpc: string;
 }
 
-export interface PoolResponse {
-  pool: {
+export interface PoolsResponse {
+  pools: {
+    id: string;
     config: string;
-    stakers: string[];
-  };
+  }[];
 }
 
 export interface StakeInfoResponse {
