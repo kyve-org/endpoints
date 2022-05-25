@@ -2,21 +2,46 @@ import { pubkeyToAddress } from '@cosmjs/amino';
 import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { addSeconds, compareAsc } from 'date-fns';
-import { Config, PoolResponse, StakeInfoResponse } from './auth.models';
+import { Config, Pool, PoolsResponse } from './auth.models';
 import { verifyADR036Signature } from '../utils/adr036';
+
+const endpoint = process.env.ENDPOINT ?? 'https://api.korellia.kyve.network';
+const lifetime = process.env.LIFETIME ?? '60';
+const prefix = process.env.BECH32_PREFIX ?? 'kyve';
+const url = process.env.URL ?? 'https://proxy.kyve.network';
 
 @Injectable()
 export class AuthService {
-  async validatePool(id: string, path: string): Promise<boolean> {
-    const url = process.env.URL ?? 'https://proxy.kyve.network';
-    const endpoint =
-      process.env.ENDPOINT ?? 'https://api.korellia.kyve.network';
+  private pools: { [id: string]: Pool } = {};
 
-    // Fetch pool configuration.
-    const { data } = await axios.get<PoolResponse>(
-      `${endpoint}/kyve/registry/v1beta1/pool/${id}`,
+  constructor() {
+    // noinspection JSIgnoredPromiseFromCall
+    this.cachePools();
+  }
+
+  private async cachePools() {
+    const { data } = await axios.get<PoolsResponse>(
+      `${endpoint}/kyve/registry/v1beta1/pools`,
     );
-    const config: Config = JSON.parse(data.pool.config);
+
+    data.pools.forEach((pool) => {
+      const config: Config = JSON.parse(pool.config);
+
+      this.pools[pool.id] = {
+        config,
+        stakers: pool.stakers,
+      };
+    });
+
+    console.log('cached ...');
+
+    // Run every 10 seconds.
+    setTimeout(this.cachePools, 10 * 1000);
+  }
+
+  async validatePool(id: string, path: string): Promise<boolean> {
+    // Fetch pool configuration.
+    const config = this.pools[id].config;
 
     // Check RPC endpoint specified in pool configuration.
     if (`${url}${path}`.startsWith(config.rpc)) {
@@ -35,11 +60,6 @@ export class AuthService {
     poolId: string,
     timestamp: string,
   ): Promise<boolean> {
-    const prefix = process.env.BECH32_PREFIX ?? 'kyve';
-    const endpoint =
-      process.env.ENDPOINT ?? 'https://api.korellia.kyve.network';
-    const lifetime = process.env.LIFETIME ?? '60';
-
     // Convert public key to Bech32 formatted address.
     const signer = pubkeyToAddress(
       {
@@ -57,9 +77,7 @@ export class AuthService {
 
     if (isValid) {
       // Signature is valid.
-      const { data } = await axios.get<StakeInfoResponse>(
-        `${endpoint}/kyve/registry/v1beta1/stake_info/${poolId}/${signer}`,
-      );
+      const stakers = this.pools[poolId].stakers;
 
       // Check if the signature is expired.
       const now = new Date();
@@ -70,7 +88,7 @@ export class AuthService {
       }
 
       // Check if the signer is an active protocol node.
-      if (data.current_stake !== '0') {
+      if (stakers.includes(signer)) {
         return true;
       } else {
         throw new HttpException('Signer is not an active protocol node.', 403);
