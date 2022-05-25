@@ -18,18 +18,20 @@ export class AuthService {
     const endpoint =
       process.env.ENDPOINT ?? 'https://api.korellia.kyve.network';
 
-    const { data } = await axios.get<PoolsResponse>(
-      `${endpoint}/kyve/registry/v1beta1/pools`,
-    );
+    try {
+      const { data } = await axios.get<PoolsResponse>(
+        `${endpoint}/kyve/registry/v1beta1/pools`,
+      );
 
-    data.pools.forEach((pool) => {
-      const config: Config = JSON.parse(pool.config);
+      data.pools.forEach((pool) => {
+        const config: Config = JSON.parse(pool.config);
 
-      this.pools[pool.id] = {
-        config,
-        stakers: pool.stakers,
-      };
-    });
+        this.pools[pool.id] = {
+          config,
+          stakers: pool.stakers,
+        };
+      });
+    } catch {}
 
     // Run every 10 seconds.
     setTimeout(() => this.cachePools(), 10 * 1000);
