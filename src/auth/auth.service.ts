@@ -5,11 +5,6 @@ import { addSeconds, compareAsc } from 'date-fns';
 import { Config, Pool, PoolsResponse } from './auth.models';
 import { verifyADR036Signature } from '../utils/adr036';
 
-const endpoint = process.env.ENDPOINT ?? 'https://api.korellia.kyve.network';
-const lifetime = process.env.LIFETIME ?? '60';
-const prefix = process.env.BECH32_PREFIX ?? 'kyve';
-const url = process.env.URL ?? 'https://proxy.kyve.network';
-
 @Injectable()
 export class AuthService {
   private pools: { [id: string]: Pool } = {};
@@ -20,6 +15,9 @@ export class AuthService {
   }
 
   private async cachePools() {
+    const endpoint =
+      process.env.ENDPOINT ?? 'https://api.korellia.kyve.network';
+
     const { data } = await axios.get<PoolsResponse>(
       `${endpoint}/kyve/registry/v1beta1/pools`,
     );
@@ -33,13 +31,13 @@ export class AuthService {
       };
     });
 
-    console.log('cached ...');
-
     // Run every 10 seconds.
-    setTimeout(this.cachePools, 10 * 1000);
+    setTimeout(() => this.cachePools(), 10 * 1000);
   }
 
   async validatePool(id: string, path: string): Promise<boolean> {
+    const url = process.env.URL ?? 'https://proxy.kyve.network';
+
     // Fetch pool configuration.
     const config = this.pools[id].config;
 
@@ -60,6 +58,9 @@ export class AuthService {
     poolId: string,
     timestamp: string,
   ): Promise<boolean> {
+    const lifetime = process.env.LIFETIME ?? '60';
+    const prefix = process.env.BECH32_PREFIX ?? 'kyve';
+
     // Convert public key to Bech32 formatted address.
     const signer = pubkeyToAddress(
       {
