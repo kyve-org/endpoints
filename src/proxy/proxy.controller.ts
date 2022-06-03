@@ -90,6 +90,16 @@ export class ProxyController {
     return this.proxyService.request('post', endpoint, body);
   }
 
+  @Get('polkadot/*')
+  @UseGuards(PoolGuard, SignatureGuard)
+  async polkadot(@Param('0') path: string): Promise<any> {
+    const endpoint = process.env.POLKADOT_ENDPOINT;
+    if (!endpoint)
+      throw new HttpException('No Polkadot endpoint specified.', 501);
+
+    return this.proxyService.request('get', `${endpoint}/${path}`);
+  }
+
   @Post('solana')
   @UseGuards(PoolGuard, SignatureGuard)
   async solana(@Body() body: any): Promise<any> {
