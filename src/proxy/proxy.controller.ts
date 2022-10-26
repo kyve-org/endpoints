@@ -25,7 +25,7 @@ export class ProxyController {
   }
 
   @Get('bitcoin')
-  @UseGuards(PoolGuard, SignatureGuard)
+  // @UseGuards(PoolGuard, SignatureGuard) temp disable for beta
   async bitcoin(@Body() body: any): Promise<any> {
     const endpoint = process.env.BITCOIN_ENDPOINT;
     if (!endpoint)
