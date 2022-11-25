@@ -24,6 +24,7 @@
     "@cosmjs/amino": "^0.28.4",
     "@cosmjs/crypto": "^0.28.4",
     "@cosmjs/encoding": "^0.28.4",
+    "@kyve/sdk-beta": "^3.4.0",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^2.0.0",
     "@nestjs/core": "^8.0.0",

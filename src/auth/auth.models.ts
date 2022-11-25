@@ -1,5 +1,5 @@
 export interface Config {
-  rpc: string;
+  sources: string[];
 }
 
 export interface Pool {

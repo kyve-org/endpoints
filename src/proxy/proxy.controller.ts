@@ -25,7 +25,7 @@ export class ProxyController {
   }
 
   @Get('bitcoin')
-  // @UseGuards(PoolGuard, SignatureGuard) temp disable for beta
+  @UseGuards(PoolGuard, SignatureGuard)
   async bitcoin(@Body() body: any): Promise<any> {
     const endpoint = process.env.BITCOIN_ENDPOINT;
     if (!endpoint)
@@ -62,7 +62,7 @@ export class ProxyController {
   }
 
   @Post('evmos-evm')
-  // @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(PoolGuard, SignatureGuard)
   async evmosEVM(@Body() body: any): Promise<any> {
     const endpoint = process.env.EVMOS_EVM_ENDPOINT;
     if (!endpoint)

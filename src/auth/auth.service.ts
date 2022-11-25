@@ -2,49 +2,64 @@ import { pubkeyToAddress } from '@cosmjs/amino';
 import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { addSeconds, compareAsc } from 'date-fns';
-import { Config, Pool, PoolsResponse } from './auth.models';
+import { Pool } from './auth.models';
 import { verifyADR036Signature } from '../utils/adr036';
+import SDK, { KyveLCDClientType } from '@kyve/sdk-beta';
+
+export const getPoolConfig = async (configURL: string) => {
+  try {
+    let url: string;
+
+    // allow ipfs:// or ar:// as external config urls
+    if (configURL.startsWith('ipfs://')) {
+      url = configURL.replace('ipfs://', 'https://ipfs.io/');
+    } else if (configURL.startsWith('ar://')) {
+      url = configURL.replace('ar://', 'https://arweave.net/');
+    } else {
+      throw Error('Unsupported config link protocol');
+    }
+
+    const { data } = await axios.get(url);
+    return data;
+  } catch {
+    return {};
+  }
+};
 
 @Injectable()
 export class AuthService {
+  private lcd: KyveLCDClientType;
   private pools: { [id: string]: Pool } = {};
 
   constructor() {
-    // noinspection JSIgnoredPromiseFromCall
-    this.cachePools();
+    this.lcd = new SDK(process.env.NETWORK as any).createLCDClient();
+
+    setTimeout(() => this.cachePools(), 10 * 1000);
   }
 
   private async cachePools() {
-    const endpoint =
-      process.env.ENDPOINT ?? 'https://api.korellia.kyve.network';
-
     try {
-      const { data } = await axios.get<PoolsResponse>(
-        `${endpoint}/kyve/registry/v1beta1/pools`,
-      );
+      const { pools } = await this.lcd.kyve.query.v1beta1.pools();
 
-      data.pools.forEach((pool) => {
-        const config: Config = JSON.parse(pool.config);
+      for (let pool of pools) {
+        const config = await getPoolConfig(pool.data?.config ?? '');
 
         this.pools[pool.id] = {
           config,
           stakers: pool.stakers,
         };
-      });
-    } catch {}
-
-    // Run every 10 seconds.
-    setTimeout(() => this.cachePools(), 10 * 1000);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async validatePool(id: string, path: string): Promise<boolean> {
-    const url = process.env.URL ?? 'https://proxy.kyve.network';
-
     // Fetch pool configuration.
     const config = this.pools[id].config;
 
-    // Check RPC endpoint specified in pool configuration.
-    if (`${url}${path}`.startsWith(config.rpc)) {
+    // check if url is inside the source
+    if (config.sources.includes(path)) {
       return true;
     }
 
