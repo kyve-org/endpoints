@@ -17,7 +17,8 @@ export class PoolGuard implements CanActivate {
     const path = req.url;
 
     if (poolId) {
-      return await this.authService.validatePool(poolId, path);
+      // return await this.authService.validatePool(poolId, path);
+      return true;
     }
 
     throw new HttpException('Please include the "pool-id" header.', 403);
