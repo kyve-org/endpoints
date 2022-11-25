@@ -8,14 +8,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ProxyService } from './proxy.service';
-import { PoolGuard, SignatureGuard } from '../auth/auth.guard';
+import { SignatureGuard } from '../auth/auth.guard';
 
 @Controller()
 export class ProxyController {
   constructor(private readonly proxyService: ProxyService) {}
 
   @Post('aurora')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async aurora(@Body() body: any): Promise<any> {
     const endpoint = process.env.AURORA_ENDPOINT;
     if (!endpoint)
@@ -25,7 +25,7 @@ export class ProxyController {
   }
 
   @Get('bitcoin')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async bitcoin(@Body() body: any): Promise<any> {
     const endpoint = process.env.BITCOIN_ENDPOINT;
     if (!endpoint)
@@ -35,7 +35,7 @@ export class ProxyController {
   }
 
   @Get('cosmos/*')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async cosmos(@Param('0') path: string): Promise<any> {
     const endpoint = process.env.COSMOS_ENDPOINT;
     if (!endpoint)
@@ -45,7 +45,7 @@ export class ProxyController {
   }
 
   @Get('evmos-cosmos/*')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async evmosCosmos(@Param('0') path: string): Promise<any> {
     const endpoint = process.env.EVMOS_COSMOS_ENDPOINT;
     if (!endpoint)
@@ -62,7 +62,7 @@ export class ProxyController {
   }
 
   @Post('evmos-evm')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async evmosEVM(@Body() body: any): Promise<any> {
     const endpoint = process.env.EVMOS_EVM_ENDPOINT;
     if (!endpoint)
@@ -72,7 +72,7 @@ export class ProxyController {
   }
 
   @Get('kusama/*')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async kusama(@Param('0') path: string): Promise<any> {
     const endpoint = process.env.KUSAMA_ENDPOINT;
     if (!endpoint)
@@ -82,7 +82,7 @@ export class ProxyController {
   }
 
   @Post('near')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async near(@Body() body: any): Promise<any> {
     const endpoint = process.env.NEAR_ENDPOINT;
     if (!endpoint) throw new HttpException('No Near endpoint specified.', 501);
@@ -91,7 +91,7 @@ export class ProxyController {
   }
 
   @Get('polkadot/*')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async polkadot(@Param('0') path: string): Promise<any> {
     const endpoint = process.env.POLKADOT_ENDPOINT;
     if (!endpoint)
@@ -101,7 +101,7 @@ export class ProxyController {
   }
 
   @Post('solana')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async solana(@Body() body: any): Promise<any> {
     const endpoint = process.env.SOLANA_ENDPOINT;
     if (!endpoint)
@@ -111,7 +111,7 @@ export class ProxyController {
   }
 
   @Get('terra/*')
-  @UseGuards(PoolGuard, SignatureGuard)
+  @UseGuards(SignatureGuard)
   async terra(@Param('0') path: string): Promise<any> {
     const endpoint = process.env.TERRA_ENDPOINT;
     if (!endpoint) throw new HttpException('No Terra endpoint specified.', 501);
