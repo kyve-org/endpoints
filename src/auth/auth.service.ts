@@ -2,7 +2,6 @@ import { pubkeyToAddress } from '@cosmjs/amino';
 import { HttpException, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { addSeconds, compareAsc } from 'date-fns';
-import { Pool } from './auth.models';
 import { verifyADR036Signature } from '../utils/adr036';
 import SDK, { KyveLCDClientType } from '@kyve/sdk-beta';
 
@@ -29,7 +28,7 @@ export const getPoolConfig = async (configURL: string) => {
 @Injectable()
 export class AuthService {
   private lcd: KyveLCDClientType;
-  private pools: { [id: string]: Pool } = {};
+  private pools: any = {};
 
   constructor() {
     this.lcd = new SDK(process.env.NETWORK as any).createLCDClient();
@@ -39,15 +38,23 @@ export class AuthService {
 
   private async cachePools() {
     try {
-      const { pools } = await this.lcd.kyve.query.v1beta1.pools();
+      this.pools = {};
 
-      for (let pool of pools) {
-        const config = await getPoolConfig(pool.data?.config ?? '');
+      const { stakers } = await this.lcd.kyve.query.v1beta1.stakers({
+        search: '',
+        status: 1,
+      });
 
-        this.pools[pool.id] = {
-          config,
-          stakers: pool.stakers,
-        };
+      for (let staker of stakers) {
+        for (let pool of staker.pools) {
+          const poolId = pool.pool?.id ?? '';
+
+          if (this.pools[poolId]) {
+            this.pools[poolId].push(pool.valaddress);
+          } else {
+            this.pools[poolId] = [pool.valaddress];
+          }
+        }
       }
     } catch (err) {
       console.log(err);
@@ -95,7 +102,7 @@ export class AuthService {
 
     if (isValid) {
       // Signature is valid.
-      const stakers = this.pools[poolId].stakers;
+      const valaccounts = this.pools[poolId] || [];
 
       // Check if the signature is expired.
       const now = new Date();
@@ -106,7 +113,7 @@ export class AuthService {
       }
 
       // Check if the signer is an active protocol node.
-      if (stakers.includes(signer)) {
+      if (valaccounts.includes(signer)) {
         return true;
       } else {
         throw new HttpException('Signer is not an active protocol node.', 403);
