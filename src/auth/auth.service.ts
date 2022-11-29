@@ -33,7 +33,7 @@ export class AuthService {
   constructor() {
     this.lcd = new SDK(process.env.NETWORK as any).createLCDClient();
 
-    setTimeout(() => this.cachePools(), 10 * 1000);
+    setTimeout(() => this.cachePools, 10 * 1000);
   }
 
   private async cachePools() {
