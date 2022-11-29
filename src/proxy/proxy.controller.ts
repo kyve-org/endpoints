@@ -62,7 +62,7 @@ export class ProxyController {
   }
 
   @Post('evmos-evm')
-  @UseGuards(SignatureGuard)
+  // @UseGuards(SignatureGuard)
   async evmosEVM(@Body() body: any): Promise<any> {
     const endpoint = process.env.EVMOS_EVM_ENDPOINT;
     if (!endpoint)
