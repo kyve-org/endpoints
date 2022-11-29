@@ -5,6 +5,8 @@ import { addSeconds, compareAsc } from 'date-fns';
 import { verifyADR036Signature } from '../utils/adr036';
 import SDK, { KyveLCDClientType } from '@kyve/sdk-beta';
 
+require('dotenv').config();
+
 export const getPoolConfig = async (configURL: string) => {
   try {
     let url: string;
@@ -27,38 +29,34 @@ export const getPoolConfig = async (configURL: string) => {
 
 @Injectable()
 export class AuthService {
-  private lcd: KyveLCDClientType;
   private pools: any = {};
 
   constructor() {
-    this.lcd = new SDK(process.env.NETWORK as any).createLCDClient();
+    setTimeout(async function () {
+      try {
+        const lcd = new SDK(process.env.NETWORK as any).createLCDClient();
+        this.pools = {};
 
-    setTimeout(() => this.cachePools, 10 * 1000);
-  }
+        const { stakers } = await lcd.kyve.query.v1beta1.stakers({
+          search: '',
+          status: 1,
+        });
 
-  private async cachePools() {
-    try {
-      this.pools = {};
+        for (let staker of stakers) {
+          for (let pool of staker.pools) {
+            const poolId = pool.pool?.id ?? '';
 
-      const { stakers } = await this.lcd.kyve.query.v1beta1.stakers({
-        search: '',
-        status: 1,
-      });
-
-      for (let staker of stakers) {
-        for (let pool of staker.pools) {
-          const poolId = pool.pool?.id ?? '';
-
-          if (this.pools[poolId]) {
-            this.pools[poolId].push(pool.valaddress);
-          } else {
-            this.pools[poolId] = [pool.valaddress];
+            if (this.pools[poolId]) {
+              this.pools[poolId].push(pool.valaddress);
+            } else {
+              this.pools[poolId] = [pool.valaddress];
+            }
           }
         }
+      } catch (err) {
+        console.log(err);
       }
-    } catch (err) {
-      console.log(err);
-    }
+    }, 10 * 1000);
   }
 
   async validatePool(id: string, path: string): Promise<boolean> {
